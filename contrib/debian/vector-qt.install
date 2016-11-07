@@ -1,0 +1,5 @@
+vector-qt usr/bin
+share/pixmaps/bitcoin32.xpm usr/share/pixmaps
+share/pixmaps/bitcoin80.xpm usr/share/pixmaps
+debian/vector-qt.desktop usr/share/applications
+debian/vector-qt.protocol usr/share/kde4/services/

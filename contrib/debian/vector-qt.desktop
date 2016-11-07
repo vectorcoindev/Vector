@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Vector
+Comment=Vector P2P Cryptocurrency
+Comment[fr]=Vector, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=Vector, eşten eşe kriptografik sanal para birimi
+Exec=/usr/bin/vector-qt
+Terminal=false
+Type=Application
+Icon=/usr/share/pixmaps/bitcoin80.xpm
+MimeType=x-scheme-handler/vector;
+Categories=Office;

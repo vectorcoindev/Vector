@@ -1,0 +1,2 @@
+debian/bin/vectord usr/bin
+src/vectord usr/lib/vector

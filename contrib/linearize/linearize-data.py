@@ -43,9 +43,9 @@ def wordreverse(in_buf):
 	out_words.reverse()
 	return ''.join(out_words)
 
-def calc_hdr_hash(blk_hdr):
+def calc_hdr_hash(VEC_hdr):
 	hash1 = hashlib.sha256()
-	hash1.update(blk_hdr)
+	hash1.update(VEC_hdr)
 	hash1_o = hash1.digest()
 
 	hash2 = hashlib.sha256()
@@ -54,52 +54,52 @@ def calc_hdr_hash(blk_hdr):
 
 	return hash2_o
 
-def calc_hash_str(blk_hdr):
-	hash = calc_hdr_hash(blk_hdr)
+def calc_hash_str(VEC_hdr):
+	hash = calc_hdr_hash(VEC_hdr)
 	hash = bufreverse(hash)
 	hash = wordreverse(hash)
 	hash_str = hash.encode('hex')
 	return hash_str
 
-def calc_scrypt_hash_str(blk_hdr):
-	hash = ltc_scrypt.getPoWHash(blk_hdr)
+def calc_scrypt_hash_str(VEC_hdr):
+	hash = ltc_scrypt.getPoWHash(VEC_hdr)
 	hash = bufreverse(hash)
 	hash = wordreverse(hash)
 	hash_str = hash.encode('hex')
 	return hash_str
 
-def get_blk_dt(blk_hdr):
-	members = struct.unpack("<I", blk_hdr[68:68+4])
+def get_VEC_dt(VEC_hdr):
+	members = struct.unpack("<I", VEC_hdr[68:68+4])
 	nTime = members[0]
 	dt = datetime.datetime.fromtimestamp(nTime)
 	dt_ym = datetime.datetime(dt.year, dt.month, 1)
 	return (dt_ym, nTime)
 
 def get_block_hashes(settings):
-	blkindex = []
+	VECindex = []
 	f = open(settings['hashlist'], "r")
 	for line in f:
 		line = line.rstrip()
-		blkindex.append(line)
+		VECindex.append(line)
 
-	print("Read " + str(len(blkindex)) + " hashes")
+	print("Read " + str(len(VECindex)) + " hashes")
 
-	return blkindex
+	return VECindex
 
-def mkblockset(blkindex):
-	blkmap = {}
-	for hash in blkindex:
-		blkmap[hash] = True
-	return blkmap
+def mkblockset(VECindex):
+	VECmap = {}
+	for hash in VECindex:
+		VECmap[hash] = True
+	return VECmap
 
-def copydata(settings, blkindex, blkset):
+def copydata(settings, VECindex, VECset):
 	inFn = 1
 	inF = None
 	outFn = 0
 	outsz = 0
 	outF = None
 	outFname = None
-	blkCount = 0
+	VECCount = 0
 
 	lastDate = datetime.datetime(2000, 1, 1)
 	highTS = 1408893517 - 315360000
@@ -116,7 +116,7 @@ def copydata(settings, blkindex, blkset):
 
 	while True:
 		if not inF:
-			fname = "%s/blk%04d.dat" % (settings['input'], inFn)
+			fname = "%s/VEC%04d.dat" % (settings['input'], inFn)
 			print("Input file" + fname)
 			try:
 				inF = open(fname, "rb")
@@ -139,21 +139,21 @@ def copydata(settings, blkindex, blkset):
 		su = struct.unpack("<I", inLenLE)
 		inLen = su[0]
 		rawblock = inF.read(inLen)
-		blk_hdr = rawblock[:80]
+		VEC_hdr = rawblock[:80]
 
 		hash_str = 0
-		if blkCount > 319000:
-			hash_str = calc_hash_str(blk_hdr)
+		if VECCount > 319000:
+			hash_str = calc_hash_str(VEC_hdr)
 		else:
-			hash_str = calc_scrypt_hash_str(blk_hdr)
+			hash_str = calc_scrypt_hash_str(VEC_hdr)
 
-		if not hash_str in blkset:
+		if not hash_str in VECset:
 			print("Skipping unknown block " + hash_str)
 			continue
 
-		if blkindex[blkCount] != hash_str:
+		if VECindex[VECCount] != hash_str:
 			print("Out of order block.")
-			print("Expected " + blkindex[blkCount])
+			print("Expected " + VECindex[VECCount])
 			print("Got " + hash_str)
 			sys.exit(1)
 
@@ -166,10 +166,10 @@ def copydata(settings, blkindex, blkset):
 			outFn = outFn + 1
 			outsz = 0
 
-		(blkDate, blkTS) = get_blk_dt(blk_hdr)
-		if timestampSplit and (blkDate > lastDate):
-			print("New month " + blkDate.strftime("%Y-%m") + " @ " + hash_str)
-			lastDate = blkDate
+		(VECDate, VECTS) = get_VEC_dt(VEC_hdr)
+		if timestampSplit and (VECDate > lastDate):
+			print("New month " + VECDate.strftime("%Y-%m") + " @ " + hash_str)
+			lastDate = VECDate
 			if outF:
 				outF.close()
 				if setFileTime:
@@ -183,7 +183,7 @@ def copydata(settings, blkindex, blkset):
 			if fileOutput:
 				outFname = settings['output_file']
 			else:
-				outFname = "%s/blk%05d.dat" % (settings['output'], outFn)
+				outFname = "%s/VEC%05d.dat" % (settings['output'], outFn)
 			print("Output file" + outFname)
 			outF = open(outFname, "wb")
 
@@ -191,12 +191,12 @@ def copydata(settings, blkindex, blkset):
 		outF.write(rawblock)
 		outsz = outsz + inLen + 8
 
-		blkCount = blkCount + 1
-		if blkTS > highTS:
-			highTS = blkTS
+		VECCount = VECCount + 1
+		if VECTS > highTS:
+			highTS = VECTS
 
-		if (blkCount % 1000) == 0:
-			print("Wrote " + str(blkCount) + " blocks")
+		if (VECCount % 1000) == 0:
+			print("Wrote " + str(VECCount) + " blocks")
 
 if __name__ == '__main__':
 	if len(sys.argv) != 2:
@@ -239,12 +239,12 @@ if __name__ == '__main__':
 		print("Missing output file / directory")
 		sys.exit(1)
 
-	blkindex = get_block_hashes(settings)
-	blkset = mkblockset(blkindex)
+	VECindex = get_block_hashes(settings)
+	VECset = mkblockset(VECindex)
 
-	if not "000001faef25dec4fbcf906e6242621df2c183bf232f263d0ba5b101911e4563" in blkset:
+	if not "000001faef25dec4fbcf906e6242621df2c183bf232f263d0ba5b101911e4563" in VECset:
 		print("not found")
 	else:
-		copydata(settings, blkindex, blkset)
+		copydata(settings, VECindex, VECset)
 
 
